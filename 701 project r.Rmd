@@ -1,0 +1,159 @@
+---
+title: "visulization and correlation"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+date: "2023-08-27"
+---
+
+```{r}
+# import the csv to datframe
+df1 <- read.csv('1519data.csv')
+
+# check the dataframe structure 
+head(df1)
+
+## We only select the country, avg_ghg and avg_gdp
+#The index column is 2, 16 ,17
+selected_df<-df1[c(2,16,17)]
+
+# display the dataframe
+selected_df
+
+
+# Load the tidycerse package
+library(tidyverse)
+
+
+```
+
+
+
+```{r}
+# we create the plot by using ggplot
+ggplot(selected_df,
+       #x data and y data
+       aes(x = ave_GDP, y = ave_GHG)) +
+  #scatter plot
+  geom_point() +
+  geom_text(aes(label = Country), hjust = 1.1) +
+  labs(
+    title = "GDP vs. GHG Emissions",
+    x = "Average GDP",
+    y = "Average GHG Emissions"
+  ) +
+  theme(
+    plot.margin = unit(rep(0,4), 'cm'),  
+    text = element_text(size = 8)
+  )
+
+
+
+```
+
+
+```{r}
+
+# import the region pivot table in long form (region)
+
+region_df<- read.csv('pivot_region_long.csv')
+
+
+
+```
+
+
+
+```{r}
+
+
+#modify the data.
+data_modify <- data.frame(
+  region = region_df$Region,
+  year = region_df$Year,
+  #split one column to gdp and ghg
+  GDP = region_df$Value[which(region_df$Category == 'gdp')],
+  GHG = region_df$Value[which(region_df$Category == 'ghg')]
+)
+
+ggplot(data_modify, aes(x = GDP, y = GHG, color = region)) +
+  geom_line(size = 1.2) + 
+  labs(title = "GDP vs. GHG by Region",
+       x = "GDP",
+       y = "GHG") +
+  theme_minimal() +
+  guides(color = guide_legend(override.aes = list(size = 2))) 
+
+
+```
+
+
+
+
+```{r}
+
+# import the pivot developing status data
+#read the csv
+deve.df<-read.csv('pivot_deve_long.csv')
+
+#check the data structure
+head(deve.df)
+
+
+data_modify2 <- data.frame(
+  Status = deve.df$Status,
+  year = deve.df$Year,
+    #split one column to gdp and ghg
+  GDP = deve.df$Value[which(deve.df$Category == 'gdp')],
+  GHG = deve.df$Value[which(deve.df$Category == 'ghg')]
+)
+
+ggplot(data_modify2, aes(x = GDP, y = GHG, color = Status)) +
+  geom_line(size = 1.2) + 
+  labs(title = "GDP vs. GHG by Status",
+       x = "GDP",
+       y = "GHG") +
+  theme_minimal() +
+  guides(color = guide_legend(override.aes = list(size = 2))) 
+
+```
+
+
+
+```{r}
+#spearman correlation
+
+#read the csv
+merged1<- read.csv('merged1.csv')
+
+#check the dataframe structure
+head(merged1)
+
+# select the ghg data and gdp data
+# to have a check
+ghg_ex<-merged1[5:35]
+gdp_ex<-merged1[36:66]
+
+
+# get the mean by column direction
+# by using sapply
+ghg_ex<-sapply(merged1[5:35],mean)
+gdp_ex<-sapply(merged1[36:66],mean)
+
+
+cor.test(gdp_ex, ghg_ex, method="spearman")
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
